@@ -45,16 +45,39 @@ class EventService {
 
   /// Create event
   Future<Event> createEvent(Map<String, dynamic> data) async {
-    final response = await _supabase
-        .from(_table)
-        .insert({
-          ...data,
-          'user_id': _supabase.auth.currentUser!.id,
-        })
-        .select()
-        .single();
+    try {
+      final userId = _supabase.auth.currentUser!.id;
+      
+      // Verify user profile exists before creating event
+      try {
+        final profileExists = await _supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', userId)
+            .single();
+      } catch (e) {
+        // Profile doesn't exist, create it
+        print('Profile not found for user $userId, creating one...');
+        await _supabase.from('profiles').insert({
+          'id': userId,
+          'full_name': _supabase.auth.currentUser?.email?.split('@')[0] ?? 'User',
+        });
+      }
+      
+      final response = await _supabase
+          .from(_table)
+          .insert({
+            ...data,
+            'user_id': userId,
+          })
+          .select()
+          .single();
 
-    return Event.fromJson(response);
+      return Event.fromJson(response);
+    } catch (e) {
+      print('Error creating event: $e');
+      rethrow;
+    }
   }
 
   /// Update event

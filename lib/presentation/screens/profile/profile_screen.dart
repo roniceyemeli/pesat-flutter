@@ -6,6 +6,8 @@ import '../../../data/providers/auth_provider.dart';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
+  get profile => null;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUserProfile = ref.watch(currentUserProfileProvider);
@@ -15,6 +17,14 @@ class ProfileScreen extends ConsumerWidget {
         title: const Text('Profile'),
         elevation: 0,
         backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              _showEditProfileDialog(context, ref, profile);
+            },
+          ),
+        ],
       ),
       body: currentUserProfile.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -144,6 +154,72 @@ class ProfileScreen extends ConsumerWidget {
               'Sign Out',
               style: TextStyle(color: Colors.red),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditProfileDialog(BuildContext context, WidgetRef ref, var profile) {
+    final fullNameController = TextEditingController(text: profile.fullName);
+    final bioController = TextEditingController(text: profile.bio ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Profile'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: fullNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Full Name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: bioController,
+                decoration: const InputDecoration(
+                  labelText: 'Bio',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                await ref.read(updateProfileProvider({
+                  'full_name': fullNameController.text,
+                  'bio': bioController.text,
+                }).future);
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Profile updated successfully!')),
+                  );
+                  ref.refresh(currentUserProfileProvider);
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error updating profile: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text('Save'),
           ),
         ],
       ),

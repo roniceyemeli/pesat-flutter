@@ -18,11 +18,28 @@ class AuthService {
       );
 
       if (res.user != null) {
-        // Create profile
-        await _supabase.from(_table).insert({
-          'id': res.user!.id,
-          'full_name': fullName,
-        });
+        try {
+          // Create profile
+          await _supabase.from(_table).insert({
+            'id': res.user!.id,
+            'full_name': fullName,
+            'bio': null,
+            'profile_image_url': null,
+          });
+        } catch (profileError) {
+          print('Error creating profile: $profileError');
+          // Profile creation failed, but user exists - try to create profile with minimal data
+          try {
+            await _supabase.from(_table).insert({
+              'id': res.user!.id,
+              'full_name': fullName,
+            });
+          } catch (retryError) {
+            print('Profile creation retry failed: $retryError');
+            // If profile still fails, at least the auth user exists
+            rethrow;
+          }
+        }
       }
 
       return res.user!.id;

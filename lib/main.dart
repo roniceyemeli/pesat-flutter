@@ -8,6 +8,9 @@ import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/auth/signup_screen.dart';
 import 'presentation/screens/home/home_screen.dart';
 import 'presentation/screens/events/event_feed_screen.dart';
+import 'presentation/screens/events/create_event_screen.dart';
+import 'presentation/screens/events/event_details_screen.dart';
+import 'presentation/screens/events/edit_event_screen.dart';
 import 'presentation/screens/profile/profile_screen.dart';
 import 'presentation/screens/shell_screen.dart';
 
@@ -96,6 +99,24 @@ class MyApp extends ConsumerWidget {
             GoRoute(
               path: '/signup',
               builder: (context, state) => const SignupScreen(),
+            ),
+            GoRoute(
+              path: '/create-event',
+              builder: (context, state) => const CreateEventScreen(),
+            ),
+            GoRoute(
+              path: '/event-details/:eventId',
+              builder: (context, state) {
+                final eventId = state.pathParameters['eventId']!;
+                return EventDetailsScreen(eventId: eventId);
+              },
+            ),
+            GoRoute(
+              path: '/edit-event/:eventId',
+              builder: (context, state) {
+                final eventId = state.pathParameters['eventId']!;
+                return EditEventScreen(eventId: eventId);
+              },
             ),
           ],
           errorBuilder: (context, state) => Scaffold(

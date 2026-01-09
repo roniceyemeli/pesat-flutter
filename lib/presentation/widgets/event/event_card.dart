@@ -4,11 +4,17 @@ import 'package:flutter_event_app/data/models/event.dart';
 class EventCard extends StatelessWidget {
   final Event event;
   final VoidCallback onTap;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+  final bool isOwner;
 
   const EventCard({
     Key? key,
     required this.event,
     required this.onTap,
+    this.onEdit,
+    this.onDelete,
+    this.isOwner = false,
   }) : super(key: key);
 
   @override
@@ -127,6 +133,25 @@ class EventCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (isOwner && (onEdit != null || onDelete != null))
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (onEdit != null)
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 20),
+                            onPressed: onEdit,
+                          ),
+                        if (onDelete != null)
+                          IconButton(
+                            icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                            onPressed: onDelete,
+                          ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
