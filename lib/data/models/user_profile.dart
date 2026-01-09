@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+@immutable
 class UserProfile {
   final String id;
   final String fullName;

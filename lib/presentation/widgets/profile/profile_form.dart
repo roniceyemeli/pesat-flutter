@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../utils/validators.dart';
 import 'package:intl/intl.dart';
-import '../../utils/validators.dart';
 
 class ProfileForm extends StatefulWidget {
   final String? initialFullName;

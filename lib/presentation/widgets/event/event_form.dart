@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../utils/validators.dart';
 import 'package:intl/intl.dart';
-import '../../utils/validators.dart';
 
 class EventForm extends StatefulWidget {
   final Function(Map<String, dynamic>) onSubmit;

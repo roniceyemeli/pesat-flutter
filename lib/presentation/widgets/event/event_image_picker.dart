@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_event_app/data/providers/image_upload_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 
-class EventImagePicker extends StatefulWidget {
+class EventImagePicker extends ConsumerStatefulWidget {
   final Function(File) onImageSelected;
 
   const EventImagePicker({Key? key, required this.onImageSelected})
       : super(key: key);
 
   @override
-  State<EventImagePicker> createState() => _EventImagePickerState();
+  ConsumerState<EventImagePicker> createState() => _EventImagePickerState();
 }
 
-class _EventImagePickerState extends State<EventImagePicker> {
+class _EventImagePickerState extends ConsumerState<EventImagePicker> {
   File? _selectedImage;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +62,7 @@ class _EventImagePickerState extends State<EventImagePicker> {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: _pickFromGallery,
+                onPressed: _isLoading ? null : _pickFromGallery,
                 icon: const Icon(Icons.photo),
                 label: const Text('Gallery'),
               ),
@@ -67,7 +70,7 @@ class _EventImagePickerState extends State<EventImagePicker> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: _pickFromCamera,
+                onPressed: _isLoading ? null : _pickFromCamera,
                 icon: const Icon(Icons.camera),
                 label: const Text('Camera'),
               ),
@@ -78,11 +81,41 @@ class _EventImagePickerState extends State<EventImagePicker> {
     );
   }
 
-  void _pickFromGallery() {
-    // Implement image picking logic
+  Future<void> _pickFromGallery() async {
+    setState(() => _isLoading = true);
+    try {
+      final imageFile = await ref.read(pickImageProvider.future);
+      if (imageFile != null) {
+        setState(() => _selectedImage = imageFile);
+        widget.onImageSelected(imageFile);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking image: $e')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
-  void _pickFromCamera() {
-    // Implement camera capture logic
+  Future<void> _pickFromCamera() async {
+    setState(() => _isLoading = true);
+    try {
+      final imageFile = await ref.read(pickImageFromCameraProvider.future);
+      if (imageFile != null) {
+        setState(() => _selectedImage = imageFile);
+        widget.onImageSelected(imageFile);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error capturing image: $e')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 }
