@@ -11,7 +11,11 @@ class EventService {
         .from(_table)
         .stream(primaryKey: ['id'])
         .order('event_date', ascending: false)
-        .map((event) => event.map((e) => Event.fromJson(e)).toList());
+        .map((event) => event.map((e) => Event.fromJson(e)).toList())
+        .handleError((error) {
+          print('Error loading events: $error');
+          return <Event>[];
+        });
   }
 
   /// Get user's events
@@ -21,7 +25,11 @@ class EventService {
         .stream(primaryKey: ['id'])
         .eq('user_id', _supabase.auth.currentUser!.id)
         .order('event_date', ascending: false)
-        .map((event) => event.map((e) => Event.fromJson(e)).toList());
+        .map((event) => event.map((e) => Event.fromJson(e)).toList())
+        .handleError((error) {
+          print('Error loading user events: $error');
+          return <Event>[];
+        });
   }
 
   /// Get event by ID

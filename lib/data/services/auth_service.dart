@@ -68,6 +68,20 @@ class AuthService {
           .single();
 
       return UserProfile.fromJson(response);
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST116') {
+        // Table doesn't exist yet - return a default profile
+        print('Profiles table not created yet. Run SUPABASE_SCHEMA.sql in Supabase.');
+        return UserProfile(
+          id: _supabase.auth.currentUser!.id,
+          fullName: _supabase.auth.currentUser?.email ?? 'User',
+          bio: null,
+          profileImageUrl: null,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+      }
+      rethrow;
     } catch (e) {
       rethrow;
     }
